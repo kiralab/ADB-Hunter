@@ -1,4 +1,6 @@
-# Logo
+#!/usr/bin/env python3
+
+# Information
 print (r"""
   ____    ____       ____                  _       _
  |  _ \  / ___|     / ___|  _ __    __ _  | |__   | |__     ___   _ __
@@ -17,7 +19,8 @@ print (r"""
 # Modules
 try:
     import os
-    import wget #pip3 install wget
+    import time
+    import shodan #pip3 install shodan
     import datetime #pip3 install datetime
 except ImportError as error:
     module = str(error).split()[-1].replace('\'', '')
@@ -27,25 +30,45 @@ except ImportError as error:
     )
     raise SystemExit
 
+# Create logs folder
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+
 # Settings
-api = 'PSKINdQe1GyxGgecYz2191H2JoS9qvgD'
-time = datetime.datetime.today().strftime("%H.%M.%S-%d-%m")
-pages_count = int(input('[?] How many pages need? : '))
-ip_file = 'logs_' + str(time) + '.txt'
+pages_count = int(input('[?] How many pages need scan? : '))
+api = shodan.Shodan('PSKINdQe1GyxGgecYz2191H2JoS9qvgD') # If this api key stops working just remove it from here and insert yours
+date = datetime.datetime.today().strftime("%H.%M.%S-%d-%m")
+results_file = r'logs/ips-' + date + '.txt'
 
-# Load and save ips
-for page in range(pages_count):
-    print('[' + str(page) + '] Loading page... ')
+# Load and save results from pages
+page = 1
+print('[?] If you press Ctrl + C scanning will be stopped!')
+while page < pages_count:
+    print('[' + str(page) + '/' + str(pages_count) + '] Loading page results... ')
     try:
-        wget.download('https://api.shodan.io/shodan/host/search?key=' + api + '&query=android%20debug%20bridge%20product:%22Android%20Debug%20Bridge%22&facets={facets}&page=' + str(page), out = 'page.dat', bar = None)
-    except Exception as error:
-        print('\n[!] Something went wrong!\n' + str(error) + '\n[!] Exception while loading page. Please contact to developer...')
-        raise SystemExit
-    os.system('grep -oP \'(?<=\"ip_str\": \")[^\"]*\' page.dat >> ' + ip_file)
-    os.remove('page.dat')
+        time.sleep(1)
+        results = api.search('android debug bridge product:\"Android Debug Bridge\"', page = page)
+    except KeyboardInterrupt:
+        print('[!] Ctrl + C detected.. Stopping...')
+        break
+    except shodan.exception.APIError as error:
+        print('[EXCEPTION] ' + str(error) + ' ' + 3 * '*')
+        time.sleep(3)
+        continue
+    else:
+        for result in results['matches']:
+            with open(results_file, 'a') as file:
+                file.write(result['ip_str'] + '\n')
+        page += 1
 
-print('[+] Okay, all ' + str(pages_count) + ' pages was saved to ' + ip_file)
+# Display results after loading
+print('\n[+] Okay, all results from page ' + str(page) + ', was saved to ' + results_file)
 if input('[?] Show downloaded results? (y/n) : ').lower() in ['y', 'yes', 'true', '1', '+']:
-    os.system('cat ' + ip_file)
+    results = 0
+    with open(results_file, 'r') as file:
+        for line in file.readlines():
+            print(line.replace('\n', ''))
+            results += 1
+    print('[+] Saved ' + str(results) + ' ips')
 
 print('[$] Created by LimerBoy with Love.')
