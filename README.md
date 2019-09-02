@@ -1,7 +1,7 @@
 # PS-Grabber
-___Save all vulnerable device ips to file and connect with PhoneSploit___
+*Save all vulnerable device ips to file and connect with PhoneSploit*
 
-*Installation on Linux:*
+___Installation on Linux:___
 ```
 git clone https://github.com/LimerBoy/PS-Grabber.git
 cd PS-Grabber/
