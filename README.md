@@ -11,12 +11,13 @@ python3 grabber.py
 ```
 
 
+
 ___Installation on Windows:___
 ```
 Install python3 #https://www.python.org/ftp/python/3.6.8/python-3.6.8-amd64.exe
 Download zip: https://github.com/LimerBoy/PS-Grabber/archive/master.zip
 Unzip folder PS-Grabber
 cd PS-Grabber/
-sudo pip install -r requirements.txt
+pip install -r requirements.txt
 python grabber.py
 ```
